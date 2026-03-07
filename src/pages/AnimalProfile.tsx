@@ -58,6 +58,9 @@ export default function AnimalProfile() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  const sensorData = animal ? getSensorData(animal.id) : [];
+  const timeline = animal ? getHealthTimeline(animal.id) : [];
+
   if (!animal) {
     return (
       <AppLayout>
@@ -72,9 +75,6 @@ export default function AnimalProfile() {
       </AppLayout>
     );
   }
-
-  const sensorData = getSensorData(animal.id);
-  const timeline = getHealthTimeline(animal.id);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
