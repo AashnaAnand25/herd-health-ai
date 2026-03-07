@@ -1,42 +1,17 @@
-import { ANIMALS_LIST, RiskLevel, Animal } from "@/data/syntheticData";
-import { useNavigate } from "react-router-dom";
+import { ANIMALS_LIST, BARN_NAMES, RiskLevel, Animal } from "@/data/syntheticData";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight, AlertCircle } from "lucide-react";
 
-function StatusDot({ level }: { level: RiskLevel }) {
-  const cls = {
-    HIGH: "status-dot-danger",
-    MEDIUM: "status-dot-warning",
-    LOW: "status-dot-healthy",
-    "NO-CALL": "status-dot-muted",
-  }[level];
-  return <span className={`inline-block w-2.5 h-2.5 rounded-full flex-shrink-0 ${cls}`} />;
-}
+const RISK_STYLES: Record<RiskLevel, { bg: string; text: string; border: string; label: string }> = {
+  HIGH:   { bg: "bg-danger/15", text: "text-danger", border: "border-danger/40", label: "High risk" },
+  MEDIUM: { bg: "bg-warning/15", text: "text-warning", border: "border-warning/40", label: "Medium risk" },
+  LOW:    { bg: "bg-healthy/15", text: "text-healthy", border: "border-healthy/40", label: "Low risk" },
+  "NO-CALL": { bg: "bg-field-600", text: "text-muted-foreground", border: "border-border", label: "No call" },
+};
 
-function RiskBadge({ level, score, confidence }: { level: RiskLevel; score: number; confidence: number }) {
-  if (level === "NO-CALL") {
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-field-600 text-muted-foreground border border-border">
-        <AlertCircle size={10} />
-        NO-CALL
-      </span>
-    );
-  }
-
-  const colors = {
-    HIGH:   "bg-danger/10 text-danger border-danger/30",
-    MEDIUM: "bg-warning/10 text-warning border-warning/30",
-    LOW:    "bg-healthy/10 text-healthy border-healthy/30",
-  };
-
-  return (
-    <div className="flex flex-col items-end gap-0.5">
-      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono border ${colors[level]}`}>
-        {score}% · {level}
-      </span>
-      <span className="text-[9px] font-mono text-muted-foreground">{confidence}% conf.</span>
-    </div>
-  );
+function getDisplayName(animal: Animal): string {
+  return BARN_NAMES[animal.id] || `#${animal.id}`;
 }
 
 export default function RiskTable() {
@@ -46,59 +21,73 @@ export default function RiskTable() {
     return order[a.riskLevel] - order[b.riskLevel] || b.riskScore - a.riskScore;
   });
 
+  // Show top 8 as big cards; rest are summarized
+  const priority = sorted.filter(a => a.riskLevel === "HIGH" || a.riskLevel === "MEDIUM").slice(0, 6);
+  const hasMore = sorted.length > priority.length;
+
   return (
     <div className="card-glass rounded-xl overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-        <h3 className="font-display text-sm font-bold text-foreground">Risk-Ranked Animals</h3>
-        <span className="text-xs font-mono text-muted-foreground">{ANIMALS_LIST.length} total</span>
+        <h3 className="font-display text-base font-bold text-foreground">Animals to check first</h3>
+        <span className="text-sm font-mono text-muted-foreground">{ANIMALS_LIST.length} total</span>
       </div>
 
-      <div className="overflow-y-auto max-h-[420px]">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-border bg-field-800/50">
-              <th className="text-left px-3 py-2 font-mono text-muted-foreground uppercase tracking-wider">Animal</th>
-              <th className="text-left px-3 py-2 font-mono text-muted-foreground uppercase tracking-wider hidden sm:table-cell">Breed</th>
-              <th className="text-left px-3 py-2 font-mono text-muted-foreground uppercase tracking-wider hidden md:table-cell">Activity</th>
-              <th className="text-right px-3 py-2 font-mono text-muted-foreground uppercase tracking-wider">Risk</th>
-              <th className="px-3 py-2" />
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((animal, i) => (
-              <motion.tr
-                key={`${animal.id}-${i}`}
-                className="border-b border-border/50 hover:bg-field-600/50 cursor-pointer transition-colors group"
-                onClick={() => navigate(`/animal/${animal.id}`)}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.02 }}
-              >
-                <td className="px-3 py-2.5">
-                  <div className="flex items-center gap-2">
-                    <StatusDot level={animal.riskLevel} />
-                    <div>
-                      <span className="font-mono font-semibold text-foreground">#{animal.id}</span>
-                      {animal.alertReason && (
-                        <p className="text-[10px] text-muted-foreground truncate max-w-[140px] mt-0.5 hidden sm:block">
-                          {animal.alertReason}
-                        </p>
-                      )}
-                    </div>
+      <div className="p-4 space-y-3">
+        {priority.map((animal, i) => {
+          const style = RISK_STYLES[animal.riskLevel];
+          const name = getDisplayName(animal);
+          return (
+            <motion.button
+              key={`${animal.id}-${i}`}
+              type="button"
+              onClick={() => navigate(`/animal/${animal.id}`)}
+              className={`w-full text-left rounded-xl border-2 p-4 transition-all hover:scale-[1.01] active:scale-[0.99] ${style.bg} ${style.border} hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/50`}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-display text-lg font-bold text-foreground">{name}</span>
+                    <span className="font-mono text-sm text-muted-foreground">#{animal.id}</span>
+                    <span className="text-sm text-muted-foreground">· {animal.breed}</span>
                   </div>
-                </td>
-                <td className="px-3 py-2.5 text-muted-foreground hidden sm:table-cell">{animal.breed}</td>
-                <td className="px-3 py-2.5 text-muted-foreground hidden md:table-cell font-mono">{animal.lastActivity}</td>
-                <td className="px-3 py-2.5 text-right">
-                  <RiskBadge level={animal.riskLevel} score={animal.riskScore} confidence={animal.confidence} />
-                </td>
-                <td className="px-2 py-2.5">
-                  <ChevronRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
-                </td>
-              </motion.tr>
-            ))}
-          </tbody>
-        </table>
+                  {animal.alertReason && (
+                    <p className="mt-1.5 text-sm text-foreground/90 line-clamp-2">{animal.alertReason}</p>
+                  )}
+                  <p className="mt-1 text-xs font-mono text-muted-foreground">{animal.lastActivity}</p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {animal.riskLevel === "NO-CALL" ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono bg-field-700 text-muted-foreground border border-border">
+                      <AlertCircle size={12} />
+                      NO-CALL
+                    </span>
+                  ) : (
+                    <span className={`inline-flex flex-col items-end px-2.5 py-1 rounded-lg border ${style.border} ${style.text}`}>
+                      <span className="font-display text-lg font-bold">{animal.riskScore}%</span>
+                      <span className="text-[10px] font-mono uppercase tracking-wider">{animal.riskLevel}</span>
+                    </span>
+                  )}
+                  <ChevronRight size={20} className={`${style.text} opacity-70`} />
+                </div>
+              </div>
+            </motion.button>
+          );
+        })}
+
+        {hasMore && (
+          <div className="pt-2">
+            <Link
+              to="/livefeed"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-dashed border-border text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-primary/5 transition-colors text-sm font-medium"
+            >
+              View all animals in Live Feed
+              <ChevronRight size={16} />
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

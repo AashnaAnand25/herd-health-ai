@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { HerdSenseLogo } from "@/components/brand/HerdSenseLogo";
+import { useFarmSettings } from "@/contexts/FarmSettingsContext";
 
 function ParticleField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -64,6 +65,7 @@ function ParticleField() {
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { farmName, setFarmName, herdSize } = useFarmSettings();
 
   return (
     <div className="relative min-h-screen bg-field-900 bg-grid overflow-hidden flex flex-col items-center justify-center">
@@ -104,7 +106,8 @@ export default function Landing() {
               <label className="block text-xs font-mono text-muted-foreground mb-1.5 uppercase tracking-wider">Farm Name</label>
               <input
                 type="text"
-                defaultValue="Meadowbrook Farm"
+                value={farmName}
+                onChange={e => setFarmName(e.target.value)}
                 className="w-full bg-field-700 border border-border rounded-lg px-3 py-2.5 text-sm font-body text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-colors"
               />
             </div>
@@ -135,7 +138,7 @@ export default function Landing() {
         </div>
 
         <p className="text-center text-xs font-mono text-muted-foreground mt-6 opacity-50">
-          v1.0.0-beta · HerdSense Platform · 247 animals monitored
+          v1.0.0-beta · HerdSense Platform · {herdSize} animals monitored
         </p>
       </motion.div>
     </div>

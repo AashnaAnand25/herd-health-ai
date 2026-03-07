@@ -314,67 +314,60 @@ export default function LiveFeed() {
           )}
         </AnimatePresence>
 
-        {/* Data Replay */}
-        <div className="card-glass rounded-xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="font-display text-sm font-bold text-foreground">Data Replay — 24hr Simulation</h3>
-              <p className="text-xs font-mono text-muted-foreground mt-0.5">
-                Scrub through a simulated day to see how alerts appear over time
-              </p>
+        {/* Data Replay - only show on pens view */}
+        {view === "pens" && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="card-glass rounded-xl p-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-display text-sm font-bold text-foreground">Data Replay — 24hr Simulation</h3>
+                <p className="text-xs font-mono text-muted-foreground mt-0.5">
+                  Scrub through a simulated day to see how alerts appear over time
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setIsPlaying(!isPlaying);
+                  if (!isPlaying) {
+                    setElapsed(0);
+                    setScrubber(0);
+                  }
+                }}
+                className={`px-4 py-2 rounded-lg font-mono text-xs font-semibold transition-all ${
+                  isPlaying
+                    ? "bg-warning/20 text-warning border border-warning/30"
+                    : "bg-primary text-primary-foreground shadow-glow-lime"
+                }`}
+              >
+                {isPlaying ? "⏹ Stop" : "▶ Play Replay"}
+              </button>
             </div>
-            <button
-              onClick={() => {
-                setIsPlaying(!isPlaying);
-                if (!isPlaying) {
-                  setElapsed(0);
-                  setScrubber(0);
-                }
-              }}
-              className={`px-4 py-2 rounded-lg font-mono text-xs font-semibold transition-all ${
-                isPlaying
-                  ? "bg-warning/20 text-warning border border-warning/30"
-                  : "bg-primary text-primary-foreground shadow-glow-lime"
-              }`}
-            >
-              {isPlaying ? "⏹ Stop" : "▶ Play Replay"}
-            </button>
-          </div>
 
-          <div className="relative mb-2">
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={scrubber}
-              onChange={e => setScrubber(Number(e.target.value))}
-              className="w-full h-2 rounded-full appearance-none cursor-pointer"
-              style={{ accentColor: "hsl(88 100% 62%)" }}
-            />
-          </div>
+            <div className="relative mb-2">
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={scrubber}
+                onChange={e => setScrubber(Number(e.target.value))}
+                className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                style={{ accentColor: "hsl(88 100% 62%)" }}
+              />
+            </div>
 
-          <div className="flex justify-between text-[10px] font-mono text-muted-foreground">
-            <span>00:00</span>
-            <span className="text-primary">
-              {String(Math.floor(scrubber * 0.24)).padStart(2, "0")}:
-              {String(Math.round((scrubber * 0.24) % 1 * 60)).padStart(2, "0")}
-            </span>
-            <span>24:00</span>
-          </div>
-
-          {scrubber > 55 && (
-            <motion.div
-              className="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-danger/10 border border-danger/30"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-            >
-              <AlertTriangle size={14} className="text-danger" />
-              <span className="text-xs font-mono text-danger">
-                {Math.round(scrubber * 0.24)}:00 — Pen 3 inactivity cluster detected. 2 animals flagged for review.
+            <div className="flex justify-between text-[10px] font-mono text-muted-foreground">
+              <span>00:00</span>
+              <span className="text-primary">
+                {String(Math.floor(scrubber * 0.24)).padStart(2, "0")}:
+                {String(Math.round((scrubber * 0.24) % 1 * 60)).padStart(2, "0")}
               </span>
-            </motion.div>
-          )}
-        </div>
+              <span>24:00</span>
+            </div>
+          </motion.div>
+        )}
 
         {/* Pipeline Diagram */}
         <div className="card-glass rounded-xl p-6">

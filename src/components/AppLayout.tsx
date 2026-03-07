@@ -4,6 +4,7 @@ import { Bell, Settings, LayoutDashboard, MessageSquare, Radio, LogOut } from "l
 import { motion } from "framer-motion";
 import { RECENT_ALERTS } from "@/data/syntheticData";
 import { HerdSenseLogo } from "@/components/brand/HerdSenseLogo";
+import { useFarmSettings } from "@/contexts/FarmSettingsContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +28,7 @@ const NAV_ITEMS = [
 export default function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { farmName } = useFarmSettings();
   const criticalCount = RECENT_ALERTS.filter(a => a.severity === "HIGH").length;
   const displayAlerts = RECENT_ALERTS.slice(0, 7);
 
@@ -69,7 +71,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
           {/* Right side */}
           <div className="flex items-center gap-3">
-            <span className="hidden sm:block text-xs font-mono text-muted-foreground">Meadowbrook Farm</span>
+            <span className="hidden sm:block text-xs font-mono text-muted-foreground">{farmName}</span>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -142,7 +144,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 <DropdownMenuLabel className="font-display text-sm font-bold text-foreground">
                   James Callaghan
                 </DropdownMenuLabel>
-                <p className="px-2 py-0.5 text-[10px] font-mono text-muted-foreground">Meadowbrook Farm</p>
+                <p className="px-2 py-0.5 text-[10px] font-mono text-muted-foreground">{farmName}</p>
                 <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem asChild className="cursor-pointer focus:bg-field-700 focus:text-foreground">
                   <Link to="/settings" className="flex items-center gap-2">

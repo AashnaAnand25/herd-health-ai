@@ -31,6 +31,7 @@ const KPI_CARDS = [
     color: "text-foreground",
     accent: "border-border",
     suffix: "head",
+    scrollTarget: null as string | null,
   },
   {
     label: "Animals at Risk",
@@ -40,6 +41,7 @@ const KPI_CARDS = [
     accent: "border-warning/30",
     suffix: "flagged",
     pulse: "animate-pulse-warning",
+    scrollTarget: "risk-section",
   },
   {
     label: "Critical Alerts Today",
@@ -49,30 +51,47 @@ const KPI_CARDS = [
     accent: "border-danger/30",
     suffix: "active",
     pulse: "animate-pulse-danger",
+    scrollTarget: "alerts-section",
   },
 ];
+
+function scrollToSection(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
 export default function KPIBar() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {KPI_CARDS.map((kpi, i) => (
-        <motion.div
-          key={kpi.label}
-          className={`card-glass rounded-xl p-4 border ${kpi.accent}`}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.08 }}
-        >
-          <div className="flex items-start justify-between mb-3">
-            <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider">{kpi.label}</p>
-            <kpi.icon size={16} className={`${kpi.color} ${kpi.pulse || ""}`} />
-          </div>
-          <div className="flex items-end gap-2">
-            <span className={`font-display text-3xl font-bold ${kpi.color}`}>{kpi.value}</span>
-            <span className="text-xs font-mono text-muted-foreground mb-1">{kpi.suffix}</span>
-          </div>
-        </motion.div>
-      ))}
+      {KPI_CARDS.map((kpi, i) => {
+        const content = (
+          <>
+            <div className="flex items-start justify-between mb-3">
+              <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider">{kpi.label}</p>
+              <kpi.icon size={16} className={`${kpi.color} ${("pulse" in kpi && kpi.pulse) || ""}`} />
+            </div>
+            <div className="flex items-end gap-2">
+              <span className={`font-display text-3xl font-bold ${kpi.color}`}>{kpi.value}</span>
+              <span className="text-xs font-mono text-muted-foreground mb-1">{kpi.suffix}</span>
+            </div>
+          </>
+        );
+        const cardClass = `card-glass rounded-xl p-4 border ${kpi.accent} ${kpi.scrollTarget ? "cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-transform" : ""}`;
+        return (
+          <motion.div
+            key={kpi.label}
+            className={cardClass}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08 }}
+            onClick={kpi.scrollTarget ? () => scrollToSection(kpi.scrollTarget!) : undefined}
+            onKeyDown={kpi.scrollTarget ? (e) => e.key === "Enter" && scrollToSection(kpi.scrollTarget!) : undefined}
+            role={kpi.scrollTarget ? "button" : undefined}
+            tabIndex={kpi.scrollTarget ? 0 : undefined}
+          >
+            {content}
+          </motion.div>
+        );
+      })}
 
       {/* Health Score with ring */}
       <motion.div

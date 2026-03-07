@@ -4,8 +4,10 @@ import RiskTable from "@/components/dashboard/RiskTable";
 import AlertFeed from "@/components/dashboard/AlertFeed";
 import ActivityHeatmap from "@/components/dashboard/ActivityHeatmap";
 import HealthTrendChart from "@/components/dashboard/HealthTrendChart";
+import { useFarmSettings } from "@/contexts/FarmSettingsContext";
 
 export default function Dashboard() {
+  const { farmName, herdSize } = useFarmSettings();
   return (
     <AppLayout>
       <div className="px-4 md:px-8 py-6 max-w-screen-2xl mx-auto space-y-6">
@@ -13,7 +15,7 @@ export default function Dashboard() {
           <div>
             <h2 className="font-display text-2xl font-bold text-foreground">Herd Overview</h2>
             <p className="text-sm text-muted-foreground font-mono mt-0.5">
-              Meadowbrook Farm · 247 animals · Last sync <span className="text-primary">2 min ago</span>
+              {farmName} · {herdSize} animals · Last sync <span className="text-primary">2 min ago</span>
             </p>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-field-600 border border-primary/20">
@@ -26,7 +28,9 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <div className="space-y-6">
-            <RiskTable />
+            <section id="risk-section" className="scroll-mt-24">
+              <RiskTable />
+            </section>
             <AlertFeed />
           </div>
           <div className="space-y-6">

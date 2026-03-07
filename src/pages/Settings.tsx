@@ -1,19 +1,29 @@
 import AppLayout from "@/components/AppLayout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Sliders, Shield, Eye, Info, Key } from "lucide-react";
+import { useFarmSettings } from "@/contexts/FarmSettingsContext";
 
 export default function Settings() {
-  const [farmName, setFarmName] = useState("Meadowbrook Farm");
+  const { farmName, setFarmName, herdSize, setHerdSize } = useFarmSettings();
+  const [localFarmName, setLocalFarmName] = useState(farmName);
+  const [localHerdSize, setLocalHerdSize] = useState(herdSize);
   const [location, setLocation] = useState("Wicklow, Ireland");
-  const [herdSize, setHerdSize] = useState(247);
   const [confidenceThreshold, setConfidenceThreshold] = useState(60);
   const [alertThreshold, setAlertThreshold] = useState(70);
   const [judgeMode, setJudgeMode] = useState(true);
   const [saved, setSaved] = useState(false);
   const hasEnvKey = Boolean(import.meta.env.VITE_ANTHROPIC_API_KEY?.trim());
 
+  // Keep local form in sync when context changes (e.g. another tab or initial load)
+  useEffect(() => {
+    setLocalFarmName(farmName);
+    setLocalHerdSize(herdSize);
+  }, [farmName, herdSize]);
+
   const handleSave = () => {
+    setFarmName(localFarmName);
+    setHerdSize(localHerdSize);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -34,7 +44,7 @@ export default function Settings() {
           </div>
           <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
-              { label: "Farm Name", value: farmName, setter: setFarmName },
+              { label: "Farm Name", value: localFarmName, setter: setLocalFarmName },
               { label: "Location", value: location, setter: setLocation },
             ].map(field => (
               <div key={field.label}>
@@ -51,8 +61,8 @@ export default function Settings() {
               <label className="block text-xs font-mono text-muted-foreground mb-1.5 uppercase tracking-wider">Herd Size</label>
               <input
                 type="number"
-                value={herdSize}
-                onChange={e => setHerdSize(Number(e.target.value))}
+                value={localHerdSize}
+                onChange={e => setLocalHerdSize(Number(e.target.value))}
                 className="w-full bg-field-700 border border-border rounded-lg px-3 py-2.5 text-sm font-body text-foreground focus:outline-none focus:border-primary transition-colors"
               />
             </div>
