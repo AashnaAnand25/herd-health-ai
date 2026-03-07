@@ -37,6 +37,7 @@ export const FIELD_ORACLE_SUGGESTED_QUESTIONS = [
   "Which animals were flagged for follow-up?",
   "What does the extension factsheet say about foot rot?",
   "Compare our feed costs this year vs last year",
+  "Which animals are due for vaccines this month?",
 ] as const;
 
 export const FIELD_ORACLE_DEMO_DOCUMENTS: FieldOracleSeedDocument[] = [
@@ -163,6 +164,51 @@ Total annual feed spend for 2024: $84,200.
 YEAR-OVER-YEAR COMPARISON
 Feed spend increased by 12% versus 2023.`,
   },
+  {
+    name: "2024–2025 Vaccination & Health Record",
+    type: "Vet Records",
+    pageCount: 6,
+    text: `2024–2025 VACCINATION & HEALTH RECORD — MEADOWBROOK FARM
+
+PER-ANIMAL VACCINATION LOG (sample animals)
+
+Animal ID: A142 (Bessie). Breed: Holstein. Pen: Pen 3.
+- Clostridial 7-way: given 2024-09-15; next due 2025-03-15 (booster due in ~10 days).
+- IBR/BVD/PI3/BRSV (respiratory): given 2024-10-01; next due 2025-04-01.
+- Deworming: given 2024-11-20; next due 2025-02-20.
+Notes: Currently flagged for reduced feeding; ensure vaccine timing does not stress animal.
+
+Animal ID: R401 (Ginger). Breed: Hereford. Pen: Pen 3.
+- Clostridial 7-way: given 2024-08-22; next due 2025-02-22 (OVERDUE).
+- Respiratory (IBR/BVD): given 2024-09-10; next due 2025-03-10.
+Notes: Rapid weight loss noted; vet follow-up scheduled. Do not vaccinate until vet clears.
+
+Animal ID: B089 (Daisy). Breed: Angus. Pen: Pen 3.
+- Clostridial 7-way: given 2024-10-05; next due 2025-04-05.
+- Respiratory: given 2024-10-05; next due 2025-04-05.
+- Deworming: given 2024-12-01; next due 2025-03-01.
+Notes: Gait irregularity under observation. Vaccines current.
+
+Animal ID: F017 (Clover). Breed: Holstein. Pen: Pen 5.
+- Clostridial 7-way: given 2024-09-28; next due 2025-03-28.
+- Respiratory: given 2024-09-28; next due 2025-03-28.
+Notes: Abnormal lying posture; monitor before next booster.
+
+Animal ID: G044 (Rosie). Breed: Charolais. Pen: Pen 2.
+- Clostridial 7-way: given 2024-11-01; next due 2025-05-01.
+- Respiratory: given 2024-11-01; next due 2025-05-01.
+Notes: Temperature elevation recently; delay any new vaccines until normal.
+
+Animal ID: C201 (Ishani). Breed: Hereford. Pen: Pen 1.
+- Clostridial 7-way: given 2024-10-15; next due 2025-04-15.
+- Deworming: given 2024-11-25; next due 2025-02-25 (due soon).
+Notes: Healthy baseline.
+
+HERD-LEVEL REMINDERS
+- Animals due for clostridial booster in next 30 days: A142, R401 (overdue).
+- Do not vaccinate animals with active fever or acute illness; consult vet for stressed or at-risk animals.
+- Withdrawal times: observe drug withdrawal times per FDA CVM / FARAD reference before slaughter or milk.`,
+  },
 ];
 
 export const FIELD_ORACLE_DEMO_RESPONSES: Record<
@@ -258,6 +304,26 @@ export const FIELD_ORACLE_DEMO_RESPONSES: Record<
     ],
     confidence: "High",
     confidenceNote: "The cost log states both the annual total and the year-over-year change directly.",
+  },
+  "Which animals are due for vaccines this month?": {
+    answer:
+      "From your vaccination record: A142 (Bessie) has a clostridial 7-way booster due around March 15 (in ~10 days). R401 (Ginger) is OVERDUE for clostridial booster (next due was Feb 22). C201 (Ishani) has deworming due soon (Feb 25). Do not vaccinate R401 until the vet clears her (rapid weight loss); and delay vaccines for G044 (Rosie) until her temperature is normal.",
+    evidence: [
+      {
+        source: "2024–2025 Vaccination & Health Record — Per-Animal Log (A142)",
+        quote: "Clostridial 7-way: given 2024-09-15; next due 2025-03-15 (booster due in ~10 days).",
+      },
+      {
+        source: "2024–2025 Vaccination & Health Record — Per-Animal Log (R401)",
+        quote: "Clostridial 7-way: given 2024-08-22; next due 2025-02-22 (OVERDUE).",
+      },
+      {
+        source: "2024–2025 Vaccination & Health Record — Herd-Level Reminders",
+        quote: "Animals due for clostridial booster in next 30 days: A142, R401 (overdue). Do not vaccinate animals with active fever or acute illness.",
+      },
+    ],
+    confidence: "High",
+    confidenceNote: "The vaccination record lists next-due dates and herd-level reminders directly.",
   },
 };
 

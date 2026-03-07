@@ -1,5 +1,6 @@
 import AppLayout from "@/components/AppLayout";
 import KPIBar from "@/components/dashboard/KPIBar";
+import VaccineAlertsCard from "@/components/dashboard/VaccineAlertsCard";
 import RiskTable from "@/components/dashboard/RiskTable";
 import AlertFeed from "@/components/dashboard/AlertFeed";
 import ActivityHeatmap from "@/components/dashboard/ActivityHeatmap";
@@ -25,6 +26,8 @@ export default function Dashboard() {
         </div>
 
         <KPIBar />
+
+        <VaccineAlertsCard />
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <div className="space-y-6">
