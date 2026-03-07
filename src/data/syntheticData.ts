@@ -17,7 +17,16 @@ export interface Animal {
   temperature: number; // °C
   vetVisits: number;
   notes?: string;
+  barnName?: string; // friendly name for Live Feed
 }
+
+/** Friendly barn names for display (keyed by animal id; fallback to Tag #id) */
+export const BARN_NAMES: Record<string, string> = {
+  A142: "Bessie", B089: "Daisy", F017: "Clover", C201: "Ishani", "C201-7": "Sunny",
+  E115: "Maggie", G044: "Rosie", H198: "Maple", D033: "Peaches", J221: "Honey",
+  K088: "Buttercup", L332: "Willow", M067: "Pumpkin", N155: "Blossom", P009: "Cocoa",
+  Q274: "Mocha", R401: "Ginger", S119: "Nutmeg", T288: "Dandelion", U055: "Penny",
+};
 
 export interface Alert {
   id: string;
@@ -91,6 +100,18 @@ export const PENS: Pen[] = [
   { id: "pen5", name: "Pen 5 — Pasture Hill",  animalCount: 40, avgActivity: 55, temperature: 39.1, alertCount: 1, status: "warning", sparkline: [72,70,65,60,58,56,55] },
   { id: "pen6", name: "Pen 6 — Quarantine",    animalCount: 12, avgActivity: 62, temperature: 38.9, alertCount: 0, status: "normal",  sparkline: [55,58,60,62,63,62,62] },
 ];
+
+/** Map pen id (e.g. "pen1") to animal pen label ("Pen 1") for filtering */
+export function getPenLabel(penId: string): string {
+  const num = penId.replace(/^pen/i, "");
+  return `Pen ${num}`;
+}
+
+/** Animals in a given pen for Live Feed drill-down */
+export function getAnimalsByPenId(penId: string): Animal[] {
+  const label = getPenLabel(penId);
+  return ANIMALS_LIST.filter(a => a.pen === label);
+}
 
 // 30-day health trend
 export const HEALTH_TREND = Array.from({ length: 30 }, (_, i) => {

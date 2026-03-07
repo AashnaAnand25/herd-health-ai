@@ -1,9 +1,17 @@
 import { ReactNode } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Bell, Settings, LayoutDashboard, MessageSquare, Radio } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Bell, Settings, LayoutDashboard, MessageSquare, Radio, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
 import { RECENT_ALERTS } from "@/data/syntheticData";
 import { HerdSenseLogo } from "@/components/brand/HerdSenseLogo";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -18,7 +26,9 @@ const NAV_ITEMS = [
 
 export default function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const criticalCount = RECENT_ALERTS.filter(a => a.severity === "HIGH").length;
+  const displayAlerts = RECENT_ALERTS.slice(0, 7);
 
   return (
     <div className="min-h-screen bg-background bg-grid flex flex-col">
@@ -60,17 +70,96 @@ export default function AppLayout({ children }: AppLayoutProps) {
           {/* Right side */}
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-xs font-mono text-muted-foreground">Meadowbrook Farm</span>
-            <button className="relative p-2 rounded-md hover:bg-field-600 transition-colors">
-              <Bell size={18} className="text-muted-foreground" />
-              {criticalCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-danger text-white text-[9px] font-bold flex items-center justify-center animate-pulse-danger">
-                  {criticalCount}
-                </span>
-              )}
-            </button>
-            <div className="w-8 h-8 rounded-full bg-field-500 border border-border flex items-center justify-center text-xs font-display font-bold text-primary">
-              JC
-            </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="relative p-2 rounded-md hover:bg-field-600 transition-colors outline-none focus:ring-2 focus:ring-primary/40"
+                  aria-label="Notifications"
+                >
+                  <Bell size={18} className="text-muted-foreground" />
+                  {criticalCount > 0 && (
+                    <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-danger text-white text-[9px] font-bold flex items-center justify-center animate-pulse-danger">
+                      {criticalCount}
+                    </span>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80 border-border bg-field-900 text-foreground">
+                <DropdownMenuLabel className="font-display text-sm font-bold">Notifications</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-border" />
+                {displayAlerts.length === 0 ? (
+                  <div className="px-2 py-4 text-center text-xs text-muted-foreground font-mono">
+                    No recent alerts
+                  </div>
+                ) : (
+                  displayAlerts.map(alert => (
+                    <DropdownMenuItem
+                      key={alert.id}
+                      className="cursor-pointer focus:bg-field-700 focus:text-foreground"
+                      onSelect={() => navigate(`/animal/${alert.animalId}`)}
+                    >
+                      <div className="flex flex-col gap-0.5 py-1">
+                        <span
+                          className={`text-xs font-mono font-semibold ${
+                            alert.severity === "HIGH" ? "text-danger" : "text-warning"
+                          }`}
+                        >
+                          {alert.type}
+                        </span>
+                        <span className="text-xs text-muted-foreground line-clamp-2">{alert.message}</span>
+                        <span className="text-[10px] font-mono text-muted-foreground">{alert.timestamp}</span>
+                      </div>
+                    </DropdownMenuItem>
+                  ))
+                )}
+                {RECENT_ALERTS.length > displayAlerts.length && (
+                  <>
+                    <DropdownMenuSeparator className="bg-border" />
+                    <DropdownMenuItem
+                      className="cursor-pointer focus:bg-field-700 text-primary font-mono text-xs"
+                      onSelect={() => navigate("/dashboard")}
+                    >
+                      View all on Dashboard
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="w-8 h-8 rounded-full bg-field-500 border border-border flex items-center justify-center text-xs font-display font-bold text-primary hover:bg-field-600 hover:border-primary/30 transition-colors outline-none focus:ring-2 focus:ring-primary/40"
+                  aria-label="Account menu"
+                >
+                  JC
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 border-border bg-field-900 text-foreground">
+                <DropdownMenuLabel className="font-display text-sm font-bold text-foreground">
+                  James Callaghan
+                </DropdownMenuLabel>
+                <p className="px-2 py-0.5 text-[10px] font-mono text-muted-foreground">Meadowbrook Farm</p>
+                <DropdownMenuSeparator className="bg-border" />
+                <DropdownMenuItem asChild className="cursor-pointer focus:bg-field-700 focus:text-foreground">
+                  <Link to="/settings" className="flex items-center gap-2">
+                    <Settings size={14} />
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-border" />
+                <DropdownMenuItem
+                  className="cursor-pointer focus:bg-field-700 focus:text-foreground text-muted-foreground"
+                  onSelect={() => navigate("/")}
+                >
+                  <LogOut size={14} className="mr-2" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
