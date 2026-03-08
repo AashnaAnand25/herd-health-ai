@@ -108,8 +108,8 @@ async def detect_cows(file: UploadFile = File(...)):
                     conf = box.conf[0].cpu().numpy()
                     cls = int(box.cls[0].cpu().numpy())
                     
-                    # Map class to behavior/health indicator
-                    class_name = model.names[cls]
+                    # Map class to lameness detection
+                    class_name = LAMENESS_CLASSES.get(cls, 'unknown')
                     
                     detection = DetectionResult(
                         class_name=class_name,
@@ -160,7 +160,7 @@ async def analyze_behavior(file: UploadFile = File(...)):
                 for box in boxes:
                     conf = box.conf[0].cpu().numpy()
                     cls = int(box.cls[0].cpu().numpy())
-                    class_name = model.names[cls]
+                    class_name = LAMENESS_CLASSES.get(cls, 'unknown')
                     
                     # Analyze specific behaviors
                     behavior_analysis = analyze_specific_behavior(class_name, conf, image)
@@ -205,7 +205,7 @@ async def piglet_birth_monitor(file: UploadFile = File(...)):
                 for box in boxes:
                     conf = box.conf[0].cpu().numpy()
                     cls = int(box.cls[0].cpu().numpy())
-                    class_name = model.names[cls]
+                    class_name = LAMENESS_CLASSES.get(cls, 'unknown')
                     
                     if "piglet" in class_name.lower():
                         piglets_detected += 1
@@ -339,26 +339,46 @@ def analyze_cow_behavior(class_name: str, confidence: float, bbox: List[float], 
     
     return None
 
-def analyze_specific_behavior(class_name: str, confidence: float, image: np.ndarray) -> Optional[BehaviorAnalysis]:
-    """Analyze specific cow behaviors"""
-    behaviors = {
-        "eating": {"health_impact": 1.0, "description": "Normal feeding behavior"},
-        "walking": {"health_impact": 0.8, "description": "Normal movement"},
-        "lying_down": {"health_impact": 0.6, "description": "Resting behavior"},
-        "distress": {"health_impact": -2.0, "description": "Signs of distress detected"},
-        "abnormal_movement": {"health_impact": -1.5, "description": "Unusual movement pattern"}
+def analyze_specific_behavior(class_name: str, confidence: float, image: np.ndarray) -> Optional[Dict]:
+    """Analyze specific lameness behaviors for health monitoring"""
+    behavior_analysis = {
+        'behavior_type': class_name,
+        'confidence': confidence,
+        'timestamp': datetime.now().isoformat()
     }
     
-    if class_name.lower() in behaviors:
-        return BehaviorAnalysis(
-            behavior_type=class_name,
-            confidence=confidence,
-            duration=0.0,  # Would be calculated from video
-            animal_count=1,
-            health_indicators={"score": behaviors[class_name.lower()]["health_impact"]}
-        )
+    # Add lameness-specific analysis
+    if 'lameness' in class_name.lower():
+        if 'severe' in class_name.lower():
+            behavior_analysis['severity'] = 'severe'
+            behavior_analysis['recommendation'] = 'Immediate veterinary attention required'
+            behavior_analysis['action'] = 'isolate_animal'
+        elif 'mild' in class_name.lower():
+            behavior_analysis['severity'] = 'mild'
+            behavior_analysis['recommendation'] = 'Schedule veterinary examination within 1-2 weeks'
+            behavior_analysis['action'] = 'increase_monitoring'
     
-    return None
+    elif class_name == 'cow_normal_walking':
+        behavior_analysis['severity'] = 'normal'
+        behavior_analysis['recommendation'] = 'Continue regular monitoring'
+        behavior_analysis['action'] = 'maintain_current_regimen'
+    
+    elif class_name == 'cow_lying_down':
+        behavior_analysis['severity'] = 'normal'
+        behavior_analysis['recommendation'] = 'Monitor duration and position'
+        behavior_analysis['action'] = 'check_for_other_behaviors'
+    
+    elif class_name == 'cow_standing':
+        behavior_analysis['severity'] = 'normal'
+        behavior_analysis['recommendation'] = 'Normal standing behavior'
+        behavior_analysis['action'] = 'continue_monitoring'
+    
+    elif class_name == 'cow_eating':
+        behavior_analysis['severity'] = 'normal'
+        behavior_analysis['recommendation'] = 'Good appetite and health indicators'
+        behavior_analysis['action'] = 'continue_monitoring'
+    
+    return behavior_analysis
 
 def analyze_fall_danger(bbox: List[float], image: np.ndarray, confidence: float) -> Optional[Dict]:
     """Analyze piglet fall dangers"""
@@ -379,6 +399,54 @@ def analyze_fall_danger(bbox: List[float], image: np.ndarray, confidence: float)
         }
     
     return None
+
+LAMENESS_CLASSES = {
+    0: 'cow_normal_walking',
+    1: 'cow_lameness_mild',
+    2: 'cow_lameness_severe', 
+    3: 'cow_lying_down',
+    4: 'cow_standing',
+    5: 'cow_eating'
+}
+
+HEALTH_RECOMMENDATIONS = {
+    'cow_normal_walking': {
+        'status': 'healthy',
+        'priority': 'low',
+        'action': 'Continue monitoring',
+        'recommendation': 'Normal walking pattern detected. Continue regular health monitoring.'
+    },
+    'cow_lameness_mild': {
+        'status': 'attention',
+        'priority': 'medium',
+        'action': 'Schedule veterinary check',
+        'recommendation': 'Mild lameness detected. Consider scheduling a veterinary examination within 1-2 weeks.'
+    },
+    'cow_lameness_severe': {
+        'status': 'critical',
+        'priority': 'high',
+        'action': 'Immediate veterinary attention',
+        'recommendation': 'Severe lameness detected! Immediate veterinary attention required. Isolate from herd if possible.'
+    },
+    'cow_lying_down': {
+        'status': 'normal',
+        'priority': 'low',
+        'action': 'Monitor duration',
+        'recommendation': 'Cow is lying down. Monitor duration and contact with other behaviors.'
+    },
+    'cow_standing': {
+        'status': 'normal',
+        'priority': 'low',
+        'action': 'Continue monitoring',
+        'recommendation': 'Normal standing behavior. Continue regular monitoring.'
+    },
+    'cow_eating': {
+        'status': 'normal',
+        'priority': 'low',
+        'action': 'Continue monitoring',
+        'recommendation': 'Normal eating behavior detected. Good appetite and health indicators.'
+    }
+}
 
 def generate_health_recommendations(behaviors: List[BehaviorAnalysis]) -> List[str]:
     """Generate health recommendations based on behavior analysis"""

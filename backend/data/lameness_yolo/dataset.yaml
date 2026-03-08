@@ -1,0 +1,23 @@
+# Lameness Detection Dataset Configuration
+# Based on GitHub: https://github.com/whsu2s/Lameness-Detection
+
+# Dataset Information
+path: /Users/harinisridhar/herd-health-ai/backend/data/lameness_yolo
+train: images/train
+val: images/val  
+test: images/test
+
+# Classes
+nc: 6
+names: ['cow_normal_walking', 'cow_lameness_mild', 'cow_lameness_severe', 'cow_lying_down', 'cow_standing', 'cow_eating']
+
+# Lameness Detection Details
+# Uses DeepLabCut pose estimation (25 keypoints)
+# HRNN (Hierarchical Recurrent Neural Network) approach
+# Video resolution: 680x420 at 20 fps
+# Skeleton sequence data with (x,y) coordinates
+
+# Training Configuration
+img_size: 640
+batch_size: 16
+epochs: 100
