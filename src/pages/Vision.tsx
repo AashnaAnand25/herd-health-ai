@@ -13,6 +13,7 @@ interface VisionResults {
   risk: "LOW" | "MEDIUM" | "HIGH";
   alert: string | null;
   detections: number;
+  subject?: "animal" | "human";
   timestamp: number;
   camera_available?: boolean;
 }
@@ -179,7 +180,7 @@ export default function Vision() {
         <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-2.5 flex items-center gap-2">
           <Info size={16} className="text-primary shrink-0" />
           <p className="text-sm font-body text-foreground/90">
-            Computer Vision Mode — YOLOv8 running locally via Python backend. Point camera at any animal or person to classify behavior in real time.
+            Computer Vision Mode — YOLOv8 running locally via Python backend. Detects cattle behavior (Standing, Grazing, Lying Down) or falls back to human movement detection (Standing, Walking, Crouching) when no animal is in frame.
           </p>
         </div>
 
@@ -246,6 +247,15 @@ export default function Vision() {
             <div className="card-glass rounded-xl overflow-hidden p-4 md:p-6">
               {results ? (
                 <>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                      results.subject === "human"
+                        ? "border-orange-500/50 text-orange-400 bg-orange-500/10"
+                        : "border-primary/40 text-primary bg-primary/10"
+                    }`}>
+                      {results.subject === "human" ? "PERSON DETECTED" : "ANIMAL DETECTED"}
+                    </span>
+                  </div>
                   <p className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
                     {results.behavior}
                   </p>

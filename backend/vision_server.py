@@ -98,7 +98,7 @@ def classify_behavior(detections):
         width = box[2] - box[0]
         height = box[3] - box[1]
         aspect_ratio = width / height if height > 0 else 1
-        
+
         # Map real CBVD-5 classes to cattle behaviors
         if label == "stand":
             behaviors.append(("Standing/Walking", conf, "LOW"))
@@ -124,8 +124,34 @@ def classify_behavior(detections):
             behaviors.append(("Abnormal Gait", conf, "HIGH"))
         else:
             behaviors.append((f"Detected: {label}", conf, "LOW"))
-    
+
     return behaviors[0] if behaviors else ("No animal detected", 0.0, "LOW")
+
+
+COCO_PERSON_CLASS = 0  # COCO class index for "person"
+
+
+def classify_human_behavior(xyxy, frame_h, frame_w):
+    """Classify human movement from bounding box geometry."""
+    x1, y1, x2, y2 = xyxy
+    width = x2 - x1
+    height = y2 - y1
+    aspect = width / height if height > 0 else 1
+    box_area_frac = (width * height) / (frame_w * frame_h) if frame_w * frame_h > 0 else 0
+    y_center_frac = ((y1 + y2) / 2) / frame_h if frame_h > 0 else 0.5
+
+    if aspect > 1.5:
+        return "Lying Down", "MEDIUM"
+    if aspect < 0.45:
+        # Very tall narrow box — likely standing upright
+        return "Standing", "LOW"
+    if aspect < 0.65 and y_center_frac > 0.55:
+        return "Standing", "LOW"
+    if 0.65 <= aspect <= 1.0 and box_area_frac < 0.12:
+        return "Walking", "LOW"
+    if 0.65 <= aspect <= 1.2:
+        return "Crouching / Bending", "LOW"
+    return "Standing", "LOW"
 
 
 def process_frames():
@@ -169,7 +195,41 @@ def process_frames():
                     2,
                 )
                 detections.append({"label": label, "confidence": conf, "box": xyxy})
+
+        # --- Human fallback: if no cattle detected, run COCO person detection ---
+        subject = "animal"
+        if not detections:
+            frame_h_px, frame_w_px = frame.shape[:2]
+            try:
+                h_results = coco_model(frame, verbose=False, device=device, conf=0.35, classes=[COCO_PERSON_CLASS])
+            except Exception:
+                h_results = coco_model(frame, verbose=False, device="cpu", conf=0.35, classes=[COCO_PERSON_CLASS])
+            for r in h_results:
+                for box in r.boxes:
+                    conf = float(box.conf[0])
+                    xyxy = box.xyxy[0].tolist()
+                    h_behavior, _ = classify_human_behavior(xyxy, frame_h_px, frame_w_px)
+                    color = (255, 165, 0)  # orange for humans
+                    cv2.rectangle(frame, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), color, 2)
+                    cv2.putText(
+                        frame,
+                        f"person: {h_behavior} {conf:.2f}",
+                        (int(xyxy[0]), max(int(xyxy[1]) - 10, 10)),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.55, color, 2,
+                    )
+                    detections.append({"label": f"person:{h_behavior}", "confidence": conf, "box": xyxy})
+            if detections:
+                subject = "human"
+
         behavior, confidence, risk = classify_behavior(detections)
+        # For human detections, unpack the label properly
+        if subject == "human" and detections:
+            best = max(detections, key=lambda d: d["confidence"])
+            raw_label = best["label"]  # "person:Standing" etc.
+            behavior = raw_label.split(":", 1)[1] if ":" in raw_label else raw_label
+            confidence = best["confidence"]
+            risk = "LOW"
+
         alert = None
         if risk == "HIGH":
             alert = f"Abnormal behavior detected — {behavior}"
@@ -182,6 +242,7 @@ def process_frames():
                 "risk": risk,
                 "alert": alert,
                 "detections": len(detections),
+                "subject": subject,
                 "timestamp": time.time(),
                 "camera_available": True,
             }
