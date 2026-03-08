@@ -25,7 +25,11 @@ This Python backend provides computer vision capabilities for livestock health m
 - PostgreSQL for historical data
 
 ## Dataset Integration
-- CBVD Cow Behavior Video Dataset from Kaggle
+- **Lameness Detection Dataset** from GitHub: https://github.com/whsu2s/Lameness-Detection
+- Uses DeepLabCut for pose estimation (25 keypoints)
+- Hierarchical Recurrent Neural Network (HRNN) for lameness detection
+- Video preprocessing: 680×420 resolution at 20 fps
+- Skeleton sequence data with (x,y) coordinates for each frame
 - Custom data augmentation for farm environments
 - Train/test/val split (70/15/15)
 
