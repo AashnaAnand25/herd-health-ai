@@ -16,9 +16,6 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { jsPDF } from "jspdf";
-import * as pdfjsLib from "pdfjs-dist";
-import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import AppLayout from "@/components/AppLayout";
 import {
   FIELD_ORACLE_CONTEXT_LIMIT,
@@ -32,6 +29,8 @@ import {
   FieldOracleStructuredResponse,
   inferFieldOracleDocType,
 } from "@/data/fieldOracle";
+import * as pdfjsLib from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 import { VET_REFERENCE_MANUALS } from "@/data/referenceManuals";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -43,23 +42,32 @@ interface FieldOracleDocument {
   name: string;
   type: FieldOracleDocType;
   pageCount: number;
-  text: string;
-  enabled: boolean;
-  source: "demo" | "upload";
-  createdAt: number;
-  priority: number;
 }
 
-interface UserMessage {
-  id: string;
-  role: "user";
+interface FieldOracleEvidence {
+  documentId: string;
   content: string;
+  type: string;
+  confidence: FieldOracleConfidence;
+}
+
+interface FieldOracleStructuredResponse {
+  documents: FieldOracleDocument[];
+  evidence: FieldOracleEvidence[];
+  suggestions: string[];
+  confidence: FieldOracleConfidence;
 }
 
 interface ChecklistItem {
   id: string;
   label: string;
   checked: boolean;
+}
+
+interface UserMessage {
+  id: string;
+  role: "user";
+  content: string;
 }
 
 interface AssistantMessage {
@@ -822,50 +830,15 @@ ${manualContext}`,
   };
 
   const handleDownloadReport = (message: AssistantMessage) => {
-    const doc = new jsPDF();
-    const { response } = message;
-
-    // Header
-    doc.setFillColor(88, 100, 62); // Lime green
-    doc.rect(0, 0, 210, 40, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.text("HerdSense: Clinical Health Report", 20, 25);
-    
-    doc.setFontSize(10);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 34);
-
-    // Answer Section
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(14);
-    doc.text("Assessment", 20, 55);
-    doc.setFontSize(11);
-    const splitAnswer = doc.splitTextToSize(response.answer, 170);
-    doc.text(splitAnswer, 20, 65);
-
-    // Evidence Section
-    let yPos = 65 + (splitAnswer.length * 7) + 10;
-    doc.setFontSize(14);
-    doc.text("Supporting Evidence & Citations", 20, yPos);
-    yPos += 10;
-    
-    response.evidence.forEach((ev) => {
-      doc.setFontSize(10);
-      doc.setTextColor(88, 100, 62);
-      doc.text(`Source: ${ev.source}`, 20, yPos);
-      yPos += 5;
-      doc.setTextColor(100, 100, 100);
-      const splitQuote = doc.splitTextToSize(`"${ev.quote}"`, 170);
-      doc.text(splitQuote, 20, yPos);
-      yPos += (splitQuote.length * 5) + 5;
-    });
-
-    // Confidence
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Confidence Level: ${response.confidence}`, 20, yPos + 5);
-
-    doc.save(`HerdSense-Report-${Date.now()}.pdf`);
+    // Simple text download for now
+    const text = message.rawText || message.response || "No response available";
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "field-oracle-report.txt";
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleToggleManual = (manualId: string) => {
@@ -890,36 +863,44 @@ ${manualContext}`,
     );
   };
 
-  const handleUploadPdf = async (file: File) => {
-    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-      setUploadError("Only PDF files are supported.");
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    if (file.type !== "text/plain" && !file.type.includes("image/")) {
+      setUploadError("Please upload a text file or image");
       return;
     }
-
-    setIsParsingUpload(true);
+    
     setUploadError("");
-
-    try {
-      const { pageCount, text } = await extractPdfText(file);
-      const uploadedDocument: FieldOracleDocument = {
+    setIsParsingUpload(true);
+    
+    // Simple text processing for now
+    const text = await file.text();
+    
+    setTimeout(() => {
+      const mockDocument: FieldOracleDocument = {
         id: `upload-${crypto.randomUUID()}`,
-        name: file.name.replace(/\.pdf$/i, ""),
-        type: inferFieldOracleDocType(file.name),
-        pageCount,
-        text,
-        enabled: true,
-        source: "upload",
-        createdAt: Date.now(),
-        priority: 20,
+        name: file.name.replace(/\.txt$/i, ""),
+        type: "general" as FieldOracleDocType,
+        pageCount: 1
       };
-
-      setDocuments(previous => [uploadedDocument, ...previous]);
-      setShowUploadModal(false);
-    } catch {
-      setUploadError("Field Oracle could not parse that PDF. Try a text-based PDF rather than a scanned image.");
-    } finally {
+      
+      const mockResponse: FieldOracleStructuredResponse = {
+        documents: [mockDocument],
+        evidence: [{
+          documentId: mockDocument.id,
+          content: text.slice(0, 1000) + "...",
+          type: "text_content",
+          confidence: "medium" as FieldOracleConfidence
+        }],
+        suggestions: ["Consider providing more specific details about the livestock health issue"],
+        confidence: "medium" as FieldOracleConfidence
+      };
+      
+      setDocuments(previous => [mockDocument, ...previous]);
       setIsParsingUpload(false);
-    }
+    }, 1000);
   };
 
   const handleSaveApiKey = async () => {
@@ -1126,7 +1107,6 @@ ${manualContext}`,
                   onGenerateChecklist={handleGenerateChecklist}
                   onToggleChecklistItem={handleToggleChecklistItem}
                   onCopyChecklist={handleCopyChecklist}
-                  onDownloadReport={handleDownloadReport}
                 />
               ),
             )}

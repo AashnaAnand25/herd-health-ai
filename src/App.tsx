@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { FarmSettingsProvider } from "@/contexts/FarmSettingsContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import AnimalProfile from "./pages/AnimalProfile";
@@ -24,6 +25,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <FarmSettingsProvider>
+        <ErrorBoundary>
         <div className="scanlines">
           <AnimatePresence mode="wait">
             <Routes>
@@ -40,6 +42,7 @@ const App = () => (
             </Routes>
           </AnimatePresence>
         </div>
+        </ErrorBoundary>
         </FarmSettingsProvider>
       </BrowserRouter>
     </TooltipProvider>

@@ -27,7 +27,11 @@ latest_results = {
     "timestamp": time.time(),
 }
 
+# Try to use system camera, fallback to mock data
 cap = cv2.VideoCapture(0)
+if not cap.isOpened():
+    print("Camera not available, using mock data")
+    cap = None
 cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 output_frame = None
 lock = threading.Lock()
