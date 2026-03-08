@@ -9,10 +9,22 @@ This is a **complete, GitHub-ready dataset** for cow behavior detection and heal
 ### 📁 Dataset Structure
 ```
 backend/data/
-├── dataset.yaml                    # YOLO configuration
-├── dataset_stats.json              # Dataset statistics
-├── generate_synthetic_dataset.py   # Dataset generator script
-├── images/                         # All images (60 total)
+├── archive/                        # **Real CBVD-5 annotations** (train on this for real cow behavior)
+│   ├── CBVD-5.csv                  # VIA-format annotations (stand, lying down, foraging, etc.)
+│   └── annotations/                # AVA-style splits (optional)
+├── archive_frames/                 # (You add this) CBVD frame images matching CBVD-5.csv
+├── archive_yolo/                   # (Generated) YOLO format from archive — run convert_archive_to_yolo.py
+│   ├── dataset.yaml
+│   ├── images/ train val test
+│   └── labels/ train val test
+├── data/                           # **Synthetic generated dataset** (60 images, 10 classes)
+│   ├── dataset_stats.json
+│   ├── images/ train val test
+│   └── labels/ train val test
+├── dataset.yaml                    # YOLO config (synthetic or default)
+├── generate_synthetic_dataset.py   # Generate synthetic images
+├── convert_archive_to_yolo.py      # Convert archive CBVD-5.csv → YOLO for training
+├── images/                         # (Alternative) All images (60 total) if not using data/
 │   ├── train/ (42 images)          # Training set
 │   ├── val/ (9 images)             # Validation set
 │   └── test/ (9 images)            # Test set
@@ -55,7 +67,26 @@ backend/data/
 
 ## 🚀 Quick Start
 
-### 1. Train the Model
+### Train on archive (real CBVD-5 data)
+1. Download the [CBVD-5 cow behavior dataset](https://www.kaggle.com/datasets/fandaoerji/cbvd-5cow-behavior-video-dataset) from Kaggle.
+2. Extract frame images (e.g. `618_00002.jpg`) into `backend/data/archive_frames/` (or extract from videos and name frames to match the CSV).
+3. Convert annotations to YOLO and train:
+```bash
+cd backend/data
+python convert_archive_to_yolo.py --images archive_frames
+cd ..
+python train_model.py   # uses data/archive_yolo/dataset.yaml automatically
+```
+Archive classes: **stand, lying_down, foraging, drinking_water, rumination** (5 classes).
+
+### Train on synthetic (data/data/)
+```bash
+cd backend
+python train_model.py --data data/dataset.yaml
+# or generate more synthetic first: python data/generate_synthetic_dataset.py
+```
+
+### 1. Train the Model (default: archive if present, else synthetic)
 ```bash
 cd backend
 python train_model.py

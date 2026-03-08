@@ -14,6 +14,7 @@ import LiveFeed from "./pages/LiveFeed";
 import Vision from "./pages/Vision";
 import CameraMonitoring from "./pages/CameraMonitoring";
 import Settings from "./pages/Settings";
+import FarmPlanner from "./pages/FarmPlanner";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
               <Route path="/livefeed" element={<LiveFeed />} />
               <Route path="/vision" element={<Vision />} />
               <Route path="/camera" element={<CameraMonitoring />} />
+              <Route path="/farm-planner" element={<FarmPlanner />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

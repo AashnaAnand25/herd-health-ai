@@ -1,8 +1,8 @@
 # Lameness Detection Dataset Configuration
 # Based on GitHub: https://github.com/whsu2s/Lameness-Detection
 
-# Dataset Information
-path: data/lameness_yolo
+# Dataset paths (relative to this file). Synthetic data lives in data/images, data/labels.
+path: data/data
 train: images/train
 val: images/val  
 test: images/test

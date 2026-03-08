@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Settings, LayoutDashboard, MessageSquare, Radio, Video, LogOut } from "lucide-react";
+import { Bell, Settings, LayoutDashboard, MessageSquare, Radio, Video, LogOut, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import { RECENT_ALERTS } from "@/data/syntheticData";
 import { HerdSenseLogo } from "@/components/brand/HerdSenseLogo";
@@ -23,6 +23,7 @@ const NAV_ITEMS = [
   { to: "/livefeed",  icon: Radio,           label: "Live Feed" },
   { to: "/vision",    icon: Video,           label: "Vision" },
   { to: "/field-oracle", icon: MessageSquare, label: "Field Oracle" },
+  { to: "/farm-planner", icon: Calendar,     label: "Farm Planner" },
   { to: "/settings",  icon: Settings,        label: "Settings" },
 ];
 
@@ -30,6 +31,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { farmName } = useFarmSettings();
+  const farmInitials = farmName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(w => w[0].toUpperCase())
+    .join("");
   const criticalCount = RECENT_ALERTS.filter(a => a.severity === "HIGH").length;
   const displayAlerts = RECENT_ALERTS.slice(0, 7);
 
@@ -138,12 +145,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   className="w-8 h-8 rounded-full bg-field-500 border border-border flex items-center justify-center text-xs font-display font-bold text-primary hover:bg-field-600 hover:border-primary/30 transition-colors outline-none focus:ring-2 focus:ring-primary/40"
                   aria-label="Account menu"
                 >
-                  JC
+                  {farmInitials}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 border-border bg-field-900 text-foreground">
                 <DropdownMenuLabel className="font-display text-sm font-bold text-foreground">
-                  James Callaghan
+                  {farmName}
                 </DropdownMenuLabel>
                 <p className="px-2 py-0.5 text-[10px] font-mono text-muted-foreground">{farmName}</p>
                 <DropdownMenuSeparator className="bg-border" />
