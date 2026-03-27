@@ -131,12 +131,12 @@ export default function Settings() {
           <div className="p-4 space-y-4">
             <div className="flex items-start justify-between gap-4 rounded-lg bg-field-700 border border-border p-4">
               <div>
-                <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1">Anthropic API Key</p>
+                <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1">AI API Key</p>
                 <p className="text-sm text-foreground">
                   {hasEnvKey ? "Loaded from `.env.local`." : "No `.env.local` key found. Field Oracle will run in demo mode unless you enter one for the current session."}
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Add `VITE_ANTHROPIC_API_KEY` to `.env.local` in the project root to make Field Oracle auto-use Claude on startup.
+                  Add `VITE_ANTHROPIC_API_KEY` to `.env.local` in the project root to make Field Oracle auto-use AI on startup.
                 </p>
               </div>
               <div className="px-3 py-2 rounded-lg border border-border text-xs font-mono text-muted-foreground">
@@ -153,6 +153,7 @@ export default function Settings() {
               <Shield size={14} className="text-primary" />
               <h3 className="font-display text-sm font-bold text-foreground">Judge Mode</h3>
               <span className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-mono text-primary">Hackathon</span>
+              <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-[10px] font-mono text-amber-400">3rd Place — Precision Digital Architecture, UIUC</span>
             </div>
             <button
               onClick={() => setJudgeMode(!judgeMode)}
@@ -198,7 +199,7 @@ export default function Settings() {
             </div>
             <div>
               <h4 className="font-display text-xs font-bold text-foreground uppercase tracking-wider mb-2">Data Privacy</h4>
-              <p className="text-xs">All sensor data is processed on-device where possible. Farm documents uploaded to Field Oracle are parsed in the browser and kept in session state. If configured, the Anthropic API key is read from the local `.env.local` file at build/runtime for this frontend app.</p>
+              <p className="text-xs">All sensor data is processed on-device where possible. Farm documents uploaded to Field Oracle are parsed in the browser and kept in session state. If configured, the AI API key is read from the local `.env.local` file at build/runtime for this frontend app.</p>
             </div>
           </div>
         </div>

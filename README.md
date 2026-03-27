@@ -1,5 +1,7 @@
 # HerdSense
 
+> **3rd Place — Precision Digital Architecture Hackathon, UIUC**
+
 HerdSense is an AI livestock health intelligence dashboard for monitoring herd conditions, surfacing risk alerts, and exploring farm data through a modern operations UI.
 
 ## Features
@@ -9,12 +11,12 @@ HerdSense is an AI livestock health intelligence dashboard for monitoring herd c
 - AI-assisted farm document search with `Field Oracle`
 - Animal-level health profiling and risk signals
 
-## Claude API Setup
+## AI API Setup
 
 Create a local env file in the project root named `.env.local` and add:
 
 ```sh
-VITE_ANTHROPIC_API_KEY=your_claude_api_key_here
+VITE_ANTHROPIC_API_KEY=your_api_key_here
 ```
 
 `Field Oracle` will automatically use that key. `.env.local` is already ignored by git because of the existing `*.local` rule.

@@ -337,7 +337,7 @@ Priority should be "high" if temp >30°C or heavy rain, "medium" if moderate con
                 {loadingRecs && (
                   <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground font-mono text-sm">
                     <Loader2 size={16} className="animate-spin text-primary" />
-                    Claude is analyzing the forecast...
+                    Analyzing the forecast...
                   </div>
                 )}
                 {recError && (

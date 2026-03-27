@@ -159,7 +159,7 @@ ${evidenceBlock}
 **Confidence:** ${response.confidence} — ${response.confidenceNote}`;
 }
 
-function parseClaudeResponse(text: string): FieldOracleStructuredResponse {
+function parseAIResponse(text: string): FieldOracleStructuredResponse {
   const cleaned = text.trim();
   const answerMatch = cleaned.match(
     /(?:\*\*)?Answer:(?:\*\*)?\s*([\s\S]*?)(?=\n\s*(?:\*\*)?Supporting Evidence:)/i,
@@ -633,7 +633,7 @@ function ApiKeyModal({
             <div>
               <h3 className="font-display text-xl font-bold text-foreground">Use Field Oracle</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Enter your Anthropic API key to use Field Oracle. Stored locally in your browser only.
+                Enter your AI API key to use Field Oracle. Stored locally in your browser only.
               </p>
             </div>
             <button onClick={onClose} className="rounded-md p-1 text-muted-foreground hover:text-foreground">
@@ -651,7 +651,7 @@ function ApiKeyModal({
 
           <label className="mb-4 block">
             <span className="mb-2 block text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground">
-              Anthropic API Key
+              AI API Key
             </span>
             <input
               type="password"
@@ -747,7 +747,7 @@ export default function FieldOracle() {
 
     try {
       const assistantResponse = apiKey
-        ? await requestClaudeResponse(trimmed, nextMessages, selectedDocuments, selectedManuals, apiKey)
+        ? await requestAIResponse(trimmed, nextMessages, selectedDocuments, selectedManuals, apiKey)
         : await requestDemoResponse(trimmed);
 
       setMessages(previous => [...previous, createAssistantMessage(assistantResponse)]);
@@ -775,7 +775,7 @@ export default function FieldOracle() {
     return getDemoResponse(question);
   };
 
-  const requestClaudeResponse = async (
+  const requestAIResponse = async (
     question: string,
     conversation: FieldOracleMessage[],
     activeDocuments: FieldOracleDocument[],
@@ -808,7 +808,7 @@ ${manualContext}`,
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Anthropic API ${response.status}: ${errorText}`);
+      throw new Error(`AI API ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
@@ -818,7 +818,7 @@ ${manualContext}`,
       return buildNotFoundResponse(question);
     }
 
-    return parseClaudeResponse(text);
+    return parseAIResponse(text);
   };
 
   const handleDownloadReport = (message: AssistantMessage) => {
